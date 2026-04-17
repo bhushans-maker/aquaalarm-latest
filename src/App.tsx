@@ -11,6 +11,7 @@ import History from './components/History';
 import Settings from './components/Settings';
 import AlarmScreen from './components/AlarmScreen';
 import { Droplets, BarChart3, Settings as SettingsIcon } from 'lucide-react';
+import { cn } from './lib/utils';
 import { alarmManager } from './lib/alarm';
 import { motion, AnimatePresence } from 'motion/react';
 import { StatusBar, Style } from '@capacitor/status-bar';
