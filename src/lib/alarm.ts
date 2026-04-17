@@ -1,3 +1,6 @@
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
+
 class AlarmManager {
   private audioContext: AudioContext | null = null;
   private isPlaying = false;
@@ -45,6 +48,20 @@ class AlarmManager {
     }
 
     this.playSequence(tune);
+
+    if (Capacitor.isNativePlatform()) {
+      LocalNotifications.schedule({
+        notifications: [
+          {
+            title: "AquaAlarm",
+            body: "Time for your water break! Stay hydrated.",
+            id: 1,
+            schedule: { allowWhileIdle: true },
+            ongoing: true
+          }
+        ]
+      });
+    }
   }
 
   private playSequence(tune: string) {
@@ -129,6 +146,10 @@ class AlarmManager {
 
   public stop() {
     this.isPlaying = false;
+    
+    if (Capacitor.isNativePlatform()) {
+      LocalNotifications.cancel({ notifications: [{ id: 1 }] });
+    }
     
     this.activeOscillators.forEach(osc => {
       try { osc.stop(); osc.disconnect(); } catch (e) {}

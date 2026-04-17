@@ -11,16 +11,20 @@ import History from './components/History';
 import Settings from './components/Settings';
 import AlarmScreen from './components/AlarmScreen';
 import { Droplets, BarChart3, Settings as SettingsIcon } from 'lucide-react';
-import { cn } from './lib/utils';
 import { alarmManager } from './lib/alarm';
 import { motion, AnimatePresence } from 'motion/react';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
 
 export default function App() {
   const { profile, theme, isAlarmRinging, isAlarmUIVisible, setAlarmRinging, alarmTune, activeTab, setActiveTab } = useStore();
 
   // Request notification permission and register service worker
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
+    if (Capacitor.isNativePlatform()) {
+      LocalNotifications.requestPermissions();
+    } else if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
 
@@ -28,6 +32,29 @@ export default function App() {
       navigator.serviceWorker.register('/sw.js').catch(console.error);
     }
   }, []);
+
+  // Update Status Bar based on theme
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      const updateStatusBar = async () => {
+        try {
+          if (theme === 'dark') {
+            await StatusBar.setStyle({ style: Style.Dark });
+            await StatusBar.setBackgroundColor({ color: '#030712' }); // gray-950
+          } else if (theme === 'blue') {
+            await StatusBar.setStyle({ style: Style.Dark });
+            await StatusBar.setBackgroundColor({ color: '#1e40af' }); // blue-800
+          } else {
+            await StatusBar.setStyle({ style: Style.Light });
+            await StatusBar.setBackgroundColor({ color: '#ffffff' });
+          }
+        } catch (e) {
+          console.error('StatusBar error:', e);
+        }
+      };
+      updateStatusBar();
+    }
+  }, [theme]);
 
   // Apply theme to body
   useEffect(() => {
